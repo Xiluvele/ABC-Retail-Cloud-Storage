@@ -1,0 +1,74 @@
+﻿@model IEnumerable<string>
+
+@{
+    ViewData["Title"] = "Log Files";
+}
+
+<div class="container mt-4">
+
+    <div class="mb-4">
+
+        <h2>Azure File Logs</h2>
+
+        <p class="text-muted">
+            Application log files stored in Azure Files.
+        </p>
+
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info">
+            No log files have been created yet.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+
+            <div class="card-body">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle">
+
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var file in Model)
+                            {
+                                <tr>
+
+                                    <td>
+                                        @file
+                                    </td>
+
+                                    <td>
+                                        <a asp-action="Download"
+                                           asp-route-fileName="@file"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Download
+                                        </a>
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+</div>

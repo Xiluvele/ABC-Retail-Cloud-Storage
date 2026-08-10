@@ -1,0 +1,113 @@
+﻿@model ABCRetail.Models.Product
+
+@{
+    ViewData["Title"] = "Product Details";
+}
+
+<div class="container mt-4">
+
+    <div class="row justify-content-center">
+
+        <div class="col-md-9">
+
+            <div class="card shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h2>Product Details</h2>
+
+                    <hr />
+
+                    <div class="row">
+
+                        <div class="col-md-4 mb-3">
+
+                            @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+                            {
+                                <img src="@Model.ImageUrl"
+                                     alt="@Model.Name"
+                                     class="img-fluid rounded shadow-sm" />
+                            }
+                            else
+                            {
+                                <div class="alert alert-light border">
+                                    No image available.
+                                </div>
+                            }
+
+                        </div>
+
+                        <div class="col-md-8">
+
+                            <dl class="row">
+
+                                <dt class="col-sm-4">
+                                    Product Name
+                                </dt>
+
+                                <dd class="col-sm-8">
+                                    @Model.Name
+                                </dd>
+
+                                <dt class="col-sm-4">
+                                    Description
+                                </dt>
+
+                                <dd class="col-sm-8">
+                                    @Model.Description
+                                </dd>
+
+                                <dt class="col-sm-4">
+                                    Category
+                                </dt>
+
+                                <dd class="col-sm-8">
+                                    @Model.Category
+                                </dd>
+
+                                <dt class="col-sm-4">
+                                    Price
+                                </dt>
+
+                                <dd class="col-sm-8">
+                                    R @Model.Price.ToString("N2")
+                                </dd>
+
+                                <dt class="col-sm-4">
+                                    Stock Quantity
+                                </dt>
+
+                                <dd class="col-sm-8">
+                                    @Model.StockQuantity
+                                </dd>
+
+                            </dl>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mt-4">
+
+                        <a asp-action="Edit"
+                           asp-route-id="@Model.RowKey"
+                           class="btn btn-primary">
+                            Edit
+                        </a>
+
+                        <a asp-action="Index"
+                           class="btn btn-secondary">
+                            Back to Products
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
