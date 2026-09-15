@@ -68,11 +68,17 @@ namespace ABCRetail.Services
                 return;
             }
 
-            var uri = new Uri(imageUrl);
+            string blobName;
 
-            var blobName =
-                Uri.UnescapeDataString(
+            if (Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri))
+            {
+                blobName = Uri.UnescapeDataString(
                     uri.AbsolutePath.Split('/').Last());
+            }
+            else
+            {
+                blobName = imageUrl.TrimStart('/');
+            }
 
             var blobClient =
                 _containerClient.GetBlobClient(blobName);
@@ -87,19 +93,49 @@ namespace ABCRetail.Services
                 return string.Empty;
             }
 
-            var uri = new Uri(imageUrl);
+            // Check if the value is a valid absolute URL
+            if (!Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri))
+            {
+                // The database may contain only the blob filename.
+                // Treat it as the blob name.
+                var blobName = imageUrl.TrimStart('/');
 
-            var blobName = Uri.UnescapeDataString(
-                uri.AbsolutePath.Split('/').Last());
+                var blobClient = _containerClient.GetBlobClient(blobName);
 
-            var blobClient = _containerClient.GetBlobClient(blobName);
+                if (blobClient.CanGenerateSasUri)
+                {
+                    var sasBuilder = new BlobSasBuilder
+                    {
+                        BlobContainerName = _containerClient.Name,
+                        BlobName = blobName,
+                        Resource = "b",
+                        ExpiresOn = DateTimeOffset.UtcNow.AddHours(1)
+                    };
 
-            if (blobClient.CanGenerateSasUri)
+                    sasBuilder.SetPermissions(
+                        BlobSasPermissions.Read);
+
+                    return blobClient
+                        .GenerateSasUri(sasBuilder)
+                        .ToString();
+                }
+
+                return blobClient.Uri.ToString();
+            }
+
+            // Extract the blob filename from the full URL
+            var actualBlobName =
+                Uri.UnescapeDataString(
+                    uri.AbsolutePath.Split('/').Last());
+
+            var blob = _containerClient.GetBlobClient(actualBlobName);
+
+            if (blob.CanGenerateSasUri)
             {
                 var sasBuilder = new BlobSasBuilder
                 {
                     BlobContainerName = _containerClient.Name,
-                    BlobName = blobName,
+                    BlobName = actualBlobName,
                     Resource = "b",
                     ExpiresOn = DateTimeOffset.UtcNow.AddHours(1)
                 };
@@ -107,7 +143,7 @@ namespace ABCRetail.Services
                 sasBuilder.SetPermissions(
                     BlobSasPermissions.Read);
 
-                return blobClient
+                return blob
                     .GenerateSasUri(sasBuilder)
                     .ToString();
             }

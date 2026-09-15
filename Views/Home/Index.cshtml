@@ -2,205 +2,282 @@
     ViewData["Title"] = "Home";
 }
 
-<div class="container py-5">
+<style>
+  
+   
 
-    <div class="row align-items-center mb-5">
+    /* Main welcome section */
+    .hero-section {
+        background-color: #3d82c7;
+        border-radius: 16px;
+        padding: 50px;
+    }
 
-        <div class="col-lg-7">
+    /* Cards */
+    .home-card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
 
-            <span class="badge bg-primary mb-3">
-                Azure-Powered Retail Platform
-            </span>
+        .home-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08) !important;
+        }
 
-            <h1 class="display-4 fw-bold mb-3">
-                Welcome to ABC Retail
-            </h1>
+    /* Azure services card */
+    .azure-services-card {
+        background-color: #ffffff;
+        border-radius: 12px;
+    }
 
-            <p class="lead text-muted mb-4">
-                A cloud-based retail management solution built with ASP.NET Core MVC
-                and Microsoft Azure Storage Services.
+    /* Section divider */
+    .home-divider {
+       /*  border-color: #cbd5df; */
+        opacity: 1;
+    }
+</style>
+
+
+<div class="home-page">
+
+    <div class="container py-4">
+
+        <!-- Welcome Section -->
+        <div class="hero-section mb-5">
+
+            <div class="row align-items-center">
+
+                <div class="col-lg-7">
+
+                    <span class="badge bg-primary mb-3">
+                        Azure-Powered Retail Platform
+                    </span>
+
+                    <h1 class="display-4 fw-bold mb-3">
+                        Welcome to ABC Retail
+                    </h1>
+
+                    <p class="lead text-black mb-4">
+                        A cloud-based retail management solution built with ASP.NET Core MVC
+                        and Microsoft Azure Storage Services.
+                    </p>
+
+                    <p class="mb-4">
+                        Manage customers, products, orders, inventory transactions,
+                        product images and application files from one central platform.
+                    </p>
+
+                    <div class="d-flex flex-wrap gap-2">
+
+                        <a asp-controller="Products"
+                           asp-action="Index"
+                           class="btn btn-primary btn-lg">
+                            View Products
+                        </a>
+
+                        <a asp-controller="Customers"
+                           asp-action="Index"
+                           class="btn btn-outline-primary btn-lg">
+                            Manage Customers
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-lg-5 mt-5 mt-lg-0">
+
+                    <div class="card shadow-sm border-0 azure-services-card">
+
+                        <div class="card-body p-4">
+
+                            <h4 class="mb-4">
+                                Azure Services Used
+                            </h4>
+
+                            <div class="mb-3">
+                                <strong>Azure Table Storage</strong>
+                                <div class="text-muted">
+                                    Customer profiles and product information
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <strong>Azure Blob Storage</strong>
+                                <div class="text-muted">
+                                    Product images and multimedia
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <strong>Azure Queue Storage</strong>
+                                <div class="text-muted">
+                                    Order and inventory processing
+                                </div>
+                            </div>
+
+                            <div>
+                                <strong>Azure Files</strong>
+                                <div class="text-muted">
+                                    Application and transaction log files
+                                </div>
+                            </div>
+
+                         <div class="mb-3">
+                        <strong>Azure Functions</strong>
+                        <div class="text-muted">
+                            Handles customer storage, product image uploads,
+                            queue processing and file uploads.
+                        </div>
+                          </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <hr class="my-5 home-divider" />
+
+
+        <!-- Features Heading -->
+        <div class="text-center mb-5">
+
+            <h2 class="fw-bold">
+                Retail Management Features
+            </h2>
+
+            <p class="text-muted">
+                ABC Retail uses Azure services to improve scalability,
+                reliability and cloud-based data management.
             </p>
 
-            <p class="mb-4">
-                Manage customers, products, orders, inventory transactions,
-                product images and application files from one central platform.
-            </p>
-
-            <div class="d-flex flex-wrap gap-2">
-
-                <a asp-controller="Products"
-                   asp-action="Index"
-                   class="btn btn-primary btn-lg">
-                    View Products
-                </a>
-
-                <a asp-controller="Customers"
-                   asp-action="Index"
-                   class="btn btn-outline-primary btn-lg">
-                    Manage Customers
-                </a>
-
-            </div>
-
         </div>
 
-        <div class="col-lg-5 mt-5 mt-lg-0">
 
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
+        <!-- Feature Cards -->
+        <div class="row g-4">
 
-                    <h4 class="mb-4">
-                        Azure Services Used
-                    </h4>
+            <!-- Customers -->
+            <div class="col-md-6 col-lg-3">
 
-                    <div class="mb-3">
-                        <strong>Azure Table Storage</strong>
-                        <div class="text-muted">
-                            Customer profiles and product information
-                        </div>
-                    </div>
+                <div class="card h-100 shadow-sm border-0 home-card">
 
-                    <div class="mb-3">
-                        <strong>Azure Blob Storage</strong>
-                        <div class="text-muted">
-                            Product images and multimedia
-                        </div>
-                    </div>
+                    <div class="card-body p-4">
 
-                    <div class="mb-3">
-                        <strong>Azure Queue Storage</strong>
-                        <div class="text-muted">
-                            Order and inventory processing
-                        </div>
-                    </div>
+                        <h4>
+                            Customers
+                        </h4>
 
-                    <div>
-                        <strong>Azure Files</strong>
-                        <div class="text-muted">
-                            Application and transaction log files
-                        </div>
+                        <p class="text-muted">
+                            Create, view, update and manage customer profiles
+                            stored in Azure Table Storage.
+                        </p>
+
+                        <a asp-controller="Customers"
+                           asp-action="Index"
+                           class="btn btn-outline-primary">
+                            Manage Customers
+                        </a>
+
                     </div>
 
                 </div>
+
             </div>
 
-        </div>
 
-    </div>
+            <!-- Products -->
+            <div class="col-md-6 col-lg-3">
 
-    <hr class="my-5" />
+                <div class="card h-100 shadow-sm border-0 home-card">
 
-    <div class="text-center mb-5">
+                    <div class="card-body p-4">
 
-        <h2 class="fw-bold">
-            Retail Management Features
-        </h2>
+                        <h4>
+                            Products
+                        </h4>
 
-        <p class="text-muted">
-            ABC Retail uses Azure services to improve scalability,
-            reliability and cloud-based data management.
-        </p>
+                        <p class="text-muted">
+                            Manage product information and images stored securely
+                            using Azure Tables and Blob Storage.
+                        </p>
 
-    </div>
+                        <a asp-controller="Products"
+                           asp-action="Index"
+                           class="btn btn-outline-primary">
+                            View Products
+                        </a>
 
-    <div class="row g-4">
-
-        <div class="col-md-6 col-lg-3">
-
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body p-4">
-
-                    <h4>
-                        Customers
-                    </h4>
-
-                    <p class="text-muted">
-                        Create, view, update and manage customer profiles
-                        stored in Azure Table Storage.
-                    </p>
-
-                    <a asp-controller="Customers"
-                       asp-action="Index"
-                       class="btn btn-outline-primary">
-                        Manage Customers
-                    </a>
+                    </div>
 
                 </div>
+
             </div>
 
-        </div>
 
-        <div class="col-md-6 col-lg-3">
+            <!-- Orders -->
+            <div class="col-md-6 col-lg-3">
 
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body p-4">
+                <div class="card h-100 shadow-sm border-0 home-card">
 
-                    <h4>
-                        Products
-                    </h4>
+                    <div class="card-body p-4">
 
-                    <p class="text-muted">
-                        Manage product information and images stored securely
-                        using Azure Tables and Blob Storage.
-                    </p>
+                        <h4>
+                            Orders
+                        </h4>
 
-                    <a asp-controller="Products"
-                       asp-action="Index"
-                       class="btn btn-outline-primary">
-                        View Products
-                    </a>
+                        <p class="text-muted">
+                            Submit customer orders for reliable asynchronous
+                            processing through Azure Queue Storage.
+                        </p>
+
+                        <a asp-controller="Orders"
+                           asp-action="Index"
+                           class="btn btn-outline-primary">
+                            Process Orders
+                        </a>
+
+                    </div>
 
                 </div>
+
             </div>
 
-        </div>
 
-        <div class="col-md-6 col-lg-3">
+            <!-- Inventory -->
+            <div class="col-md-6 col-lg-3">
 
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body p-4">
+                <div class="card h-100 shadow-sm border-0 home-card">
 
-                    <h4>
-                        Orders
-                    </h4>
+                    <div class="card-body p-4">
 
-                    <p class="text-muted">
-                        Submit customer orders for reliable asynchronous
-                        processing through Azure Queue Storage.
-                    </p>
+                        <h4>
+                            Inventory
+                        </h4>
 
-                    <a asp-controller="Orders"
-                       asp-action="Index"
-                       class="btn btn-outline-primary">
-                        Process Orders
-                    </a>
+                        <p class="text-muted">
+                            Submit restock, stock reduction and adjustment
+                            transactions using Azure Queue Storage.
+                        </p>
 
-                </div>
-            </div>
+                        <a asp-controller="Inventory"
+                           asp-action="Index"
+                           class="btn btn-outline-primary">
+                            Manage Inventory
+                        </a>
 
-        </div>
-
-        <div class="col-md-6 col-lg-3">
-
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body p-4">
-
-                    <h4>
-                        Inventory
-                    </h4>
-
-                    <p class="text-muted">
-                        Submit restock, stock reduction and adjustment
-                        transactions using Azure Queue Storage.
-                    </p>
-
-                    <a asp-controller="Inventory"
-                       asp-action="Index"
-                       class="btn btn-outline-primary">
-                        Manage Inventory
-                    </a>
+                    </div>
 
                 </div>
+
             </div>
 
         </div>

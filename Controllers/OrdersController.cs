@@ -2,18 +2,21 @@
 using ABCRetail.Services;
 using ABCRetail.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ABCRetail.Controllers
 {
     public class OrdersController : Controller
     {
-        private readonly QueueStorageService _queueStorageService;
         private readonly FileStorageService _fileStorageService;
+        private readonly AzureFunctionService _azureFunctionService;
 
-        public OrdersController(QueueStorageService queueStorageService, FileStorageService fileStorageService)
+        public OrdersController(
+            FileStorageService fileStorageService,
+            AzureFunctionService azureFunctionService)
         {
-            _queueStorageService = queueStorageService;
             _fileStorageService = fileStorageService;
+            _azureFunctionService = azureFunctionService;
         }
 
         public IActionResult Index()
@@ -23,7 +26,8 @@ namespace ABCRetail.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Index(OrderViewModel model)
+        public async Task<IActionResult> Index(
+            OrderViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -42,10 +46,22 @@ namespace ABCRetail.Controllers
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _queueStorageService
-                .SendOrderMessageAsync(message);
+            // Send the order to the Azure Function.
+            // The Azure Function will then send it
+            // to the existing order-processing queue.
+            var orderSent =
+                await _azureFunctionService
+                    .SendOrderAsync(message);
 
-            //log the order details to a file in Azure Blob Storage
+            if (!orderSent)
+            {
+                TempData["ErrorMessage"] =
+                    "The order could not be sent for processing.";
+
+                return View(model);
+            }
+
+            // Create an order processing log.
             var logContent = $"""
                 Order Processing Log
 
@@ -60,10 +76,14 @@ namespace ABCRetail.Controllers
             var logFileName =
                 $"order-{message.OrderId}-{DateTime.UtcNow:yyyyMMddHHmmss}.txt";
 
-            await _fileStorageService
-                .UploadLogAsync(
-                    logFileName,
-                    logContent);
+            // Upload the order log to Azure Files.
+            var fileUploaded = await _azureFunctionService.UploadFileAsync(logFileName,logContent);
+
+            if (!fileUploaded)
+            {
+                TempData["ErrorMessage"] =
+                    "The order was sent to the queue, but the log file could not be uploaded.";
+            }
 
             TempData["SuccessMessage"] =
                 $"Order {message.OrderId} sent to Azure Queue successfully.";
@@ -74,3 +94,5 @@ namespace ABCRetail.Controllers
         }
     }
 }
+
+   

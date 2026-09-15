@@ -35,7 +35,14 @@
 
                             <label asp-for="ProductName" class="form-label"> </label>
 
-                            <input asp-for="ProductName" class="form-control" />
+                            <select asp-for="ProductName"
+                                    asp-items="Model.Products"
+                                    class="form-select">
+
+                                <option value="">-- Select Product --</option>
+
+                            </select>
+
 
                             <span asp-validation-for="ProductName" class="text-danger"></span>
 

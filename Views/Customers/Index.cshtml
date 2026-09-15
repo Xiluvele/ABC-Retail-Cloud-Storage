@@ -2,6 +2,10 @@
 
 @{
     ViewData["Title"] = "Customers";
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    string search = ViewBag.Search ?? "";
 }
 
 <div class="container mt-4">
@@ -27,6 +31,46 @@
         </div>
     }
 
+    <!-- Search -->
+    <div class="customer-search mb-4">
+
+        <form method="get" asp-action="Index">
+
+            <div class="row g-2 align-items-center">
+
+                <div class="col-md-9">
+                    <input type="text"
+                           name="search"
+                           value="@search"
+                           class="form-control search-input"
+                           placeholder="Search by name, email, phone or address..." />
+                </div>
+
+                <div class="col-md-3">
+                    <div class="d-flex gap-2">
+
+                        <button type="submit"
+                                class="btn btn-primary flex-fill">
+                            Search
+                        </button>
+
+                        @if (!string.IsNullOrWhiteSpace(search))
+                        {
+                            <a asp-action="Index"
+                               class="btn btn-outline-secondary">
+                                Clear
+                            </a>
+                        }
+
+                    </div>
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
     @if (Model == null || !Model.Any())
     {
         <div class="alert alert-info">
@@ -36,7 +80,9 @@
     else
     {
         <div class="card shadow-sm">
+
             <div class="card-body">
+
                 <div class="table-responsive">
 
                     <table class="table table-hover align-middle">
@@ -56,6 +102,7 @@
                             @foreach (var customer in Model)
                             {
                                 <tr>
+
                                     <td>
                                         @customer.FirstName
                                         @customer.LastName
@@ -74,6 +121,7 @@
                                     </td>
 
                                     <td>
+
                                         <a asp-action="Details"
                                            asp-route-id="@customer.RowKey"
                                            class="btn btn-sm btn-outline-info">
@@ -91,7 +139,9 @@
                                            class="btn btn-sm btn-outline-danger">
                                             Delete
                                         </a>
+
                                     </td>
+
                                 </tr>
                             }
 
@@ -100,8 +150,100 @@
                     </table>
 
                 </div>
+
+                @if (totalPages > 1)
+                {
+                    <nav class="mt-4">
+
+                        <ul class="pagination justify-content-center">
+
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-page="@(currentPage - 1)"
+                                   asp-route-search="@search">
+                                    Previous
+                                </a>
+
+                            </li>
+
+                            @for (int i = 1; i <= totalPages; i++)
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")">
+
+                                    <a class="page-link"
+                                       asp-action="Index"
+                                       asp-route-page="@i"
+                                       asp-route-search="@search">
+                                        @i
+                                    </a>
+
+                                </li>
+                            }
+
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-page="@(currentPage + 1)"
+                                   asp-route-search="@search">
+                                    Next
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </nav>
+                }
+
             </div>
+
         </div>
     }
 
 </div>
+
+<style>
+    .customer-search {
+        background-color: #f3f5f7;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+    .customer-table-card {
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .customer-table thead {
+        background-color: #212529;
+        color: white;
+    }
+
+    .customer-table thead th {
+        padding: 14px;
+        font-weight: 500;
+        border-bottom: none;
+    }
+
+    .customer-table tbody td {
+        padding: 14px;
+    }
+
+    .customer-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .search-input {
+        min-height: 44px;
+    }
+
+    .customer-count {
+        font-size: 14px;
+        color: #6c757d;
+    }
+</style>

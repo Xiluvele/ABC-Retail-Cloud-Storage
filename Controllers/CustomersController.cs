@@ -7,16 +7,49 @@ namespace ABCRetail.Controllers
     public class CustomersController : Controller
     {
         private readonly TableStorageService _tableStorageService;
-
-        public CustomersController(TableStorageService tableStorageService)
+        private readonly AzureFunctionService _azureFunctionService;
+        public CustomersController(TableStorageService tableStorageService, AzureFunctionService azureFunctionService)
         {
             _tableStorageService = tableStorageService;
+            _azureFunctionService = azureFunctionService;
         }
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index( string search,int page = 1)
         {
-            var customers = await _tableStorageService.GetCustomersAsync();
+            int pageSize = 10;
 
-            return View(customers);
+            var customers =
+                await _tableStorageService.GetCustomersAsync();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim().ToLower();
+
+                customers = customers
+                    .Where(c =>
+                        (c.FirstName ?? "").ToLower().Contains(search) ||
+                        (c.LastName ?? "").ToLower().Contains(search) ||
+                        (c.Email ?? "").ToLower().Contains(search) ||
+                        (c.PhoneNumber ?? "").ToLower().Contains(search) ||
+                        (c.Address ?? "").ToLower().Contains(search))
+                    .ToList();
+            }
+
+            var totalCustomers = customers.Count();
+
+            var pagedCustomers = customers
+                .OrderBy(c => c.FirstName)
+                .ThenBy(c => c.LastName)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages =
+                (int)Math.Ceiling(totalCustomers / (double)pageSize);
+
+            ViewBag.Search = search;
+
+            return View(pagedCustomers);
         }
 
         public IActionResult Create()
@@ -32,8 +65,18 @@ namespace ABCRetail.Controllers
             {
                 return View(customer);
             }
-            
-            await _tableStorageService.AddCustomerAsync(customer);
+
+            //await _tableStorageService.AddCustomerAsync(customer);
+            var success = await _azureFunctionService.StoreCustomerAsync(customer);
+
+            if (!success)
+            {
+                ModelState.AddModelError(
+                    "",
+                    "Unable to create customer. Please try again.");
+
+                return View(customer);
+            }
 
             TempData["SuccessMessage"] = "Customer created successfully!";
             return RedirectToAction(nameof(Index));

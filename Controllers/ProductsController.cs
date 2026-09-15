@@ -9,19 +9,43 @@ namespace ABCRetail.Controllers
     {
         private readonly TableStorageService _tableStorageService;
         private readonly BlobStorageService _blobStorageService;
+        private readonly AzureFunctionService _azureFunctionService;
 
-        public ProductsController(TableStorageService tableStorageService,BlobStorageService blobStorageService)
+        public ProductsController(TableStorageService tableStorageService,BlobStorageService blobStorageService, AzureFunctionService azureFunctionService)
         {
             _tableStorageService = tableStorageService;
             _blobStorageService = blobStorageService;
+            _azureFunctionService = azureFunctionService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string search, int page = 1)
         {
+            int pageSize = 8;
+
             var products =
                 await _tableStorageService.GetProductsAsync();
 
-            foreach (var product in products)
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim().ToLower();
+
+                products = products
+                    .Where(p =>
+                        (p.Name ?? "").ToLower().Contains(search) ||
+                        (p.Category ?? "").ToLower().Contains(search) ||
+                        (p.Description ?? "").ToLower().Contains(search))
+                    .ToList();
+            }
+
+            var totalProducts = products.Count();
+
+            var pagedProducts = products
+                .OrderBy(p => p.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            foreach (var product in pagedProducts)
             {
                 if (!string.IsNullOrWhiteSpace(product.ImageUrl))
                 {
@@ -30,7 +54,13 @@ namespace ABCRetail.Controllers
                 }
             }
 
-            return View(products);
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages =
+                (int)Math.Ceiling(totalProducts / (double)pageSize);
+
+            ViewBag.Search = search;
+
+            return View(pagedProducts);
         }
 
         public IActionResult Create()
@@ -51,10 +81,15 @@ namespace ABCRetail.Controllers
 
             if (model.Image != null)
             {
-                imageUrl =
-                    await _blobStorageService.UploadImageAsync(model.Image);
-            }
+                imageUrl = await _azureFunctionService.UploadProductImageAsync(model.Image);
 
+                if (imageUrl == null)
+                {
+                    ModelState.AddModelError( "", "Unable to upload the product image. Please try again.");
+
+                    return View(model);
+                }
+            }
             var product = new Product
             {
                 Name = model.ProductName,
@@ -160,11 +195,15 @@ namespace ABCRetail.Controllers
             {
                 await _blobStorageService.DeleteImageAsync(existingProduct.ImageUrl);
 
-                imageUrl =
-                    await _blobStorageService
-                        .UploadImageAsync(model.Image);
-            }
+                imageUrl = await _azureFunctionService.UploadProductImageAsync(model.Image);
 
+                if (imageUrl == null)
+                {
+                    ModelState.AddModelError( "", "Unable to upload the new product image. Please try again.");
+
+                    return View(model);
+                }
+            }
             existingProduct.Name = model.ProductName;
             existingProduct.Description = model.Description;
             existingProduct.Category = model.Category;

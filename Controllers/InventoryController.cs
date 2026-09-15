@@ -2,25 +2,37 @@
 using ABCRetail.Services;
 using ABCRetail.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace ABCRetail.Controllers
 {
     public class InventoryController : Controller
     {
-        private readonly QueueStorageService _queueStorageService;
         private readonly FileStorageService _fileStorageService;
+        private readonly AzureFunctionService _azureFunctionService;
+        private readonly TableStorageService _tableStorageService;
 
-        public InventoryController(QueueStorageService queueStorageService, FileStorageService fileStorageService)
+        public InventoryController(
+            FileStorageService fileStorageService,
+            AzureFunctionService azureFunctionService,
+            TableStorageService tableStorageService)
         {
-            _queueStorageService = queueStorageService;
             _fileStorageService = fileStorageService;
+            _azureFunctionService = azureFunctionService;
+            _tableStorageService = tableStorageService;
         }
 
-        public IActionResult Index()
+        // GET: Inventory
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var model = new InventoryViewModel();
+
+            await LoadProductsAsync(model);
+
+            return View(model);
         }
 
+        // POST: Inventory
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(
@@ -28,6 +40,9 @@ namespace ABCRetail.Controllers
         {
             if (!ModelState.IsValid)
             {
+                // Reload the products if validation fails.
+                await LoadProductsAsync(model);
+
                 return View(model);
             }
 
@@ -42,10 +57,24 @@ namespace ABCRetail.Controllers
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _queueStorageService
-                .SendInventoryMessageAsync(message);
+            // Send the inventory transaction
+            // to the ProcessInventory Azure Function.
+            var inventorySent =
+                await _azureFunctionService
+                    .SendInventoryAsync(message);
 
-            //log the inventory transaction details to a file in Azure Blob Storage
+            if (!inventorySent)
+            {
+                TempData["ErrorMessage"] =
+                    "The inventory transaction could not be sent.";
+
+                await LoadProductsAsync(model);
+
+                return View(model);
+            }
+
+            // Create an inventory transaction log.
+            // This is currently stored in Azure Files.
             var logContent = $"""
                 Inventory Transaction Log
 
@@ -59,15 +88,32 @@ namespace ABCRetail.Controllers
             var logFileName =
                 $"inventory-{message.InventoryId}-{DateTime.UtcNow:yyyyMMddHHmmss}.txt";
 
-            await _fileStorageService
-                .UploadLogAsync(
-                    logFileName,
-                    logContent);
+            var fileUploaded = await _azureFunctionService .UploadFileAsync(logFileName,logContent);
 
-            TempData["SuccessMessage"] =
-                $"Inventory transaction {message.InventoryId} sent successfully.";
+            if (!fileUploaded)
+            {
+                TempData["ErrorMessage"] ="The inventory transaction was sent, but the log file could not be uploaded.";
+            }
+
+            TempData["SuccessMessage"] = $"Inventory transaction {message.InventoryId} sent successfully.";
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // Loads products from Azure Table Storage
+        // and displays them in the Product dropdown.
+        private async Task LoadProductsAsync(InventoryViewModel model)
+        {
+            var products = await _tableStorageService.GetProductsAsync();
+
+            model.Products = products
+                .OrderBy(p => p.Name)
+                .Select(p => new SelectListItem
+                {
+                    Value = p.Name,
+                    Text = p.Name
+                })
+                .ToList();
         }
     }
 }

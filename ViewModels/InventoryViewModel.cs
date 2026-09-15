@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace ABCRetail.ViewModels
 {
@@ -14,5 +15,8 @@ namespace ABCRetail.ViewModels
         [Required]
         [Range(1, int.MaxValue)]
         public int Quantity { get; set; }
+
+        // Products displayed in the dropdown
+        public List<SelectListItem> Products { get; set; } = new();
     }
 }

@@ -2,22 +2,61 @@
 
 @{
     ViewData["Title"] = "Products";
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    string search = ViewBag.Search ?? "";
 }
+
+<style>
+    .product-search {
+        background-color: #f3f5f7;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+    .product-table-card {
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .product-table thead {
+        background-color: #212529;
+        color: white;
+    }
+
+        .product-table thead th {
+            padding: 14px;
+            border-bottom: none;
+            font-weight: 500;
+        }
+
+    .product-table tbody td {
+        padding: 14px;
+        vertical-align: middle;
+    }
+</style>
 
 <div class="container mt-4">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2>Products</h2>
+
             <p class="text-muted">
-                Product information stored in Azure Table Storage with images stored in Azure Blob Storage.
+                Product information stored in Azure Table Storage
+                with images stored in Azure Blob Storage.
             </p>
         </div>
 
-        <a asp-action="Create" class="btn btn-primary">
+        <a asp-action="Create"
+           class="btn btn-secondary">
             Add Product
         </a>
     </div>
+
 
     @if (TempData["SuccessMessage"] != null)
     {
@@ -25,6 +64,52 @@
             @TempData["SuccessMessage"]
         </div>
     }
+
+
+    <!-- Search -->
+    <div class="product-search mb-4">
+
+        <form method="get" asp-action="Index">
+
+            <div class="row g-2">
+
+                <div class="col-md-9">
+
+                    <input type="text"
+                           name="search"
+                           value="@search"
+                           class="form-control"
+                           placeholder="Search by product name, category or description..." />
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="d-flex gap-2">
+
+                        <button type="submit"
+                                class="btn  btn-secondary flex-fill">
+                            Search
+                        </button>
+
+                        @if (!string.IsNullOrWhiteSpace(search))
+                        {
+                            <a asp-action="Index"
+                               class="btn btn-outline-secondary">
+                                Clear
+                            </a>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
 
     @if (Model == null || !Model.Any())
     {
@@ -34,12 +119,13 @@
     }
     else
     {
-        <div class="card shadow-sm">
-            <div class="card-body">
+        <div class="card shadow-sm product-table-card">
+
+            <div class="card-body p-0">
 
                 <div class="table-responsive">
 
-                    <table class="table table-hover align-middle">
+                    <table class="table table-hover align-middle product-table mb-0">
 
                         <thead>
                             <tr>
@@ -76,7 +162,9 @@
                                     </td>
 
                                     <td>
-                                        <strong>@product.Name</strong>
+                                        <strong>
+                                            @product.Name
+                                        </strong>
                                     </td>
 
                                     <td>
@@ -120,7 +208,61 @@
 
                 </div>
 
+
+                @if (totalPages > 1)
+                {
+                    <nav class="mt-4 mb-3">
+
+                        <ul class="pagination justify-content-center">
+
+                            <!-- Previous -->
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-page="@(currentPage - 1)"
+                                   asp-route-search="@search">
+                                    Previous
+                                </a>
+
+                            </li>
+
+
+                            <!-- Page Numbers -->
+                            @for (int i = 1; i <= totalPages; i++)
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")">
+
+                                    <a class="page-link"
+                                       asp-action="Index"
+                                       asp-route-page="@i"
+                                       asp-route-search="@search">
+                                        @i
+                                    </a>
+
+                                </li>
+                            }
+
+
+                            <!-- Next -->
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-page="@(currentPage + 1)"
+                                   asp-route-search="@search">
+                                    Next
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </nav>
+                }
+
             </div>
+
         </div>
     }
 

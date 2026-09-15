@@ -17,6 +17,27 @@ builder.Services.AddSingleton<QueueStorageService>();
 //Add FileStorageService
 builder.Services.AddSingleton<FileStorageService>();
 
+builder.Services.AddHttpClient<AzureFunctionService>((serviceProvider, client) =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+
+    var baseUrl = configuration["AzureFunctions:BaseUrl"];
+    var functionKey = configuration["AzureFunctions:Key"];
+
+    if (string.IsNullOrWhiteSpace(baseUrl))
+        throw new InvalidOperationException(
+            "Azure Functions BaseUrl is not configured.");
+
+    client.BaseAddress = new Uri(baseUrl);
+
+    if (!string.IsNullOrWhiteSpace(functionKey))
+    {
+        client.DefaultRequestHeaders.Add(
+            "x-functions-key",
+            functionKey);
+    }
+});
+
 var app = builder.Build();
 
 // Configure HTTP request pipeline
