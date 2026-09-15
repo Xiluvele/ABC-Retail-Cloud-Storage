@@ -23,4 +23,11 @@
     <None Include=".github\workflows\dotnet-ci.yml" />
   </ItemGroup>
 
+	<ItemGroup>
+		<Compile Remove="ABCRetail.Functions\**\*.cs" />
+		<Content Remove="ABCRetail.Functions\**\*" />
+		<EmbeddedResource Remove="ABCRetail.Functions\**\*" />
+		<None Remove="ABCRetail.Functions\**\*" />
+	</ItemGroup>
+
 </Project>
